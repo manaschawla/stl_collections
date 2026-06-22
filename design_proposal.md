@@ -1,169 +1,199 @@
-# Collections Library Design Proposal
+# DESIGN PROPOSAL
+
+# Collections Library
 
 ## Project Objective
 
-The objective of this project is to design and implement a reusable collections library in C++. The library will provide generic implementations of DynamicArray, LinkedList, and HashMap using templates and dynamic memory management. The design focuses on efficiency, reusability, and safe memory ownership.
+The goal of this project is to build a reusable Collections Library consisting of DynamicArray, LinkedList, and HashMap.
 
----
+These structures will later be used in Redis Lite and future projects. To make the library reusable with multiple datatypes, templates will be used.
 
 ## Design Objectives
 
-* Support multiple data types through templates
-* Follow the Rule of Three for memory safety
-* Provide efficient implementations of common operations
-* Maintain a clean and consistent API
-* Enable reuse in future projects
+- Reusable generic data structures using templates
+- Safe memory management through the Rule of Three
+- Efficient common operations
+- Future extensibility and reuse
 
----
+## Why Not Use STL?
+
+STL containers already provide similar functionality. However, implementing these structures from scratch helps in understanding memory management, templates, copy semantics, hashing, and performance trade-offs. The goal of this project is basically understanding STL internal implementations.
+
+## Library Structure
+
+```text
+Collections Library
+│
+├── Core Data Structures
+│   ├── DynamicArray<T>
+│   ├── LinkedList<T>
+│   └── HashMap<K,V>
+│       └── Uses LinkedList for collision handling
+│
+├── Common Design Principles
+│   ├── Templates
+│   ├── Rule of Three
+│   └── Deep Copy
+│
+└── Future Extensions
+    ├── Stack<T>
+    ├── Queue<T>
+    └── Set<T>
+```
 
 # 1. Public API
 
-## DynamicArray<T>
-
-| Return Type   | Method                                  |
-| ------------- | --------------------------------------- |
-| —             | DynamicArray()                          |
-| —             | DynamicArray(const DynamicArray& other) |
-| DynamicArray& | operator=(const DynamicArray& other)    |
-| —             | ~DynamicArray()                         |
-| void          | append(const T& value)                  |
-| void          | insert(int index, const T& value)       |
-| void          | remove(int index)                       |
-| T             | get(int index) const                    |
-| void          | set(int index, const T& value)          |
-| int           | size() const                            |
-| int           | capacity() const                        |
-| bool          | isEmpty() const                         |
-| void          | clear()                                 |
-
-## LinkedList<T>
-
-| Return Type | Method                              |
-| ----------- | ----------------------------------- |
-| —           | LinkedList()                        |
-| —           | LinkedList(const LinkedList& other) |
-| LinkedList& | operator=(const LinkedList& other)  |
-| —           | ~LinkedList()                       |
-| void        | pushFront(const T& value)           |
-| void        | pushBack(const T& value)            |
-| void        | insert(int index, const T& value)   |
-| void        | removeFront()                       |
-| void        | removeBack()                        |
-| void        | remove(int index)                   |
-| T           | get(int index) const                |
-| bool        | contains(const T& value) const      |
-| int         | size() const                        |
-| bool        | isEmpty() const                     |
-| void        | clear()                             |
-
-## HashMap<K,V>
-
-| Return Type | Method                            |
-| ----------- | --------------------------------- |
-| —           | HashMap()                         |
-| —           | HashMap(const HashMap& other)     |
-| HashMap&    | operator=(const HashMap& other)   |
-| —           | ~HashMap()                        |
-| void        | put(const K& key, const V& value) |
-| V           | get(const K& key) const           |
-| bool        | contains(const K& key) const      |
-| void        | remove(const K& key)              |
-| int         | size() const                      |
-| bool        | isEmpty() const                   |
-| void        | clear()                           |
-
----
-
-# 2. Internal Representation
-
 ## DynamicArray
 
-* Elements stored in contiguous heap memory
-* Initial capacity: **8**
-* Growth factor: **1.5**
-* Resizes automatically when capacity is exhausted
+DynamicArray stores a pointer to contiguous heap memory along with size and capacity. Initial capacity is 8 and capacity grows by a factor of 1.5 when full.
+
+I choose 8 as intial size because it provides enough space for initial insertions without excessive memory usage and 1.5x growth reduces resizing while keeping memory usage under control.
+
+### Internal architecture
+
+```cpp
+T* data;
+
+int size;
+
+int capacity;
+```
+
+| Return Type | Method Signature |
+|------------|------------------|
+| — | DynamicArray() |
+| — | DynamicArray(const DynamicArray& other) |
+| DynamicArray& | operator=(const DynamicArray& other) |
+| — | ~DynamicArray() |
+| void | append(const T& value) |
+| void | insert(int index, const T& value) |
+| void | remove(int index) |
+| T | get(int index) const |
+| void | set(int index, const T& value) |
+| int | size() const |
+| int | capacity() const |
+| bool | isEmpty() const |
+| void | clear() |
+
+![DynamicArray Memory Diagram](images/DynamicArray_Memory_Layout.jpeg)
 
 ## LinkedList
 
-* Singly linked list implementation
-* Each node stores data and a pointer to the next node
-* Head and tail pointers maintained
+LinkedList is implemented as a singly linked list. Each node stores data and a next pointer. Head and tail pointers are maintained.
+
+I chose a singly linked list with head and tail pointers because it uses less memory than a doubly linked list while still allowing efficient insertion at the beginning and end.
+
+### Data Members
+
+```cpp
+Node<T>* head;
+Node<T>* tail;
+int currentSize;
+```
+
+| Return Type | Method Signature |
+|------------|------------------|
+| — | LinkedList() |
+| — | LinkedList(const LinkedList& other) |
+| LinkedList& | operator=(const LinkedList& other) |
+| — | ~LinkedList() |
+| void | pushFront(const T& value) |
+| void | pushBack(const T& value) |
+| void | insert(int index, const T& value) |
+| void | removeFront() |
+| void | removeBack() |
+| void | remove(int index) |
+| T | get(int index) const |
+| bool | contains(const T& value) const |
+| int | size() const |
+| bool | isEmpty() const |
+| void | clear() |
+
+![LinkedList Memory Diagram](images/LinkedList_Memory_Layout.jpeg)
 
 ## HashMap
 
-* Bucket array with separate chaining
-* Initial bucket count: **8**
-* Load factor threshold: **0.75**
-* Rehashing performed when the threshold is exceeded
+HashMap uses separate chaining. Each bucket points to a linked list of entries.The initial capacity will be 8 and rehashing will be performed when the load factor becomes greater than 0.75.
 
----
+I chose 8 as the initial size because it gives enough space at the start without wasting memory. I chose a load factor of 0.75 and doubling during rehashing to keep collisions low and maintain good performance.
 
-# 3. Object Lifetime and Copy Semantics
+### Bucket Node
 
-All structures implement:
+```cpp
+template<typename K, typename V>
+struct Entry
+{
+    K key;
+    V value;
+    Entry* next;
+};
+```
 
-* Destructor
-* Copy Constructor
-* Assignment Operator
+### Hash Function Strategy
 
-Deep copying is used throughout the library.
+| Key Type | Hash Method |
+|----------|------------|
+| Int | key % bucketCount |
+| Char | ASCII value % bucketCount |
+| String | Polynomial rolling hash |
+| Custom Class | User-provided hash function |
 
-Advantages of deep copying:
+| Return Type | Method Signature |
+|------------|------------------|
+| — | HashMap() |
+| — | HashMap(const HashMap& other) |
+| HashMap& | operator=(const HashMap& other) |
+| — | ~HashMap() |
+| void | put(const K& key, const V& value) |
+| V | get(const K& key) const |
+| bool | contains(const K& key) const |
+| void | remove(const K& key) |
+| int | size() const |
+| bool | isEmpty() const |
+| void | clear() |
 
-* Independent memory ownership
-* Prevents dangling pointers
-* Prevents double-free errors
-* Avoids accidental sharing of dynamic memory
+![DynamicArray Memory Diagram](images/HashMap_Memory_Layout.jpeg)
 
----
+# 3. Complexity Estimates
 
-# 4. Complexity Estimates
+| Operation | Best | Average | Worst | Reason |
+|-----------|------|----------|--------|--------|
+| DynamicArray append() | O(1) | O(1) amortized | O(n) | Resize may copy elements |
+| DynamicArray get()/set() | O(1) | O(1) | O(1) | Direct indexing |
+| DynamicArray insert()/remove() | O(1) | O(n) | O(n) | Shifting may be required |
+| LinkedList pushFront()/pushBack() | O(1) | O(1) | O(1) | Pointer updates |
+| LinkedList get() | O(1) | O(n) | O(n) | Traversal required |
+| LinkedList insert()/remove()/contains() | O(1) | O(n) | O(n) | Traversal required |
+| HashMap put()/get()/contains()/remove() | O(1) | O(1) | O(n) | Many collisions |
 
-| Operation                               | Best | Average        | Worst |
-| --------------------------------------- | ---- | -------------- | ----- |
-| DynamicArray append()                   | O(1) | O(1) amortized | O(n)  |
-| DynamicArray get()/set()                | O(1) | O(1)           | O(1)  |
-| DynamicArray insert()/remove()          | O(1) | O(n)           | O(n)  |
-| LinkedList pushFront()/pushBack()       | O(1) | O(1)           | O(1)  |
-| LinkedList get()                        | O(1) | O(n)           | O(n)  |
-| LinkedList insert()/remove()/contains() | O(1) | O(n)           | O(n)  |
-| HashMap put()/get()/contains()/remove() | O(1) | O(1)           | O(n)  |
-
-### Notes
-
-* DynamicArray resizing may require copying all elements.
-* LinkedList operations may require traversal.
-* HashMap achieves O(1) average complexity when collisions are limited.
-
----
-
-# 5. Design Decisions
+# 4 – Design Decisions
 
 ## DynamicArray
 
-* Initial capacity set to 8
-* Growth factor set to 1.5
-* Chosen to balance memory usage and performance
+I selected an initial capacity of 8 and a growth factor of 1.5. This provides a good balance between memory usage and performance. Increasing the capacity by one element at a time was rejected because it would require frequent resizing.
 
 ## LinkedList
 
-* Singly linked structure selected
-* Uses head and tail pointers
-* Lower memory overhead than a doubly linked list
+I selected a singly linked list with head and tail pointers. This design is simple, uses less memory, and supports efficient insertion at both ends. A doubly linked list was not chosen because the extra previous pointer is not required for this project.
 
 ## HashMap
 
-* Separate chaining selected for collision handling
-* Load factor threshold set to 0.75
-* Rehashing enabled
-
-## Templates
-
-* Reduce code duplication
-* Improve reusability
-* Provide compile-time type safety
+I selected separate chaining for collision handling. It is simple to implement and makes insertion and deletion easier. The initial capacity will be 8 and rehashing will be performed when the load factor becomes greater than 0.75. Open addressing was considered but rejected because deletion handling is more complicated.
 
 ## Memory Management
 
-* Deep copying selected for safe ownership of dynamically allocated memory
-* Ensures predictable object behavior
+Deep copying was selected for all structures to ensure safe memory ownership and to prevent double-free errors.
+
+## Reusability
+
+Templates were selected because they allow the same implementation to work with different data types. This makes the library reusable for future projects.
+
+## Relationship between Structures
+
+| Structure | Role in Library |
+|------------|----------------|
+| DynamicArray | Sequential storage |
+| LinkedList | Node-based storage |
+| HashMap | Key-value storage |
+| LinkedList | Used by HashMap chains |
+| HashMap | Used by Redis Lite |
