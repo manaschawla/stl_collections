@@ -37,11 +37,12 @@ public:
     void removeFront();
     void removeBack();
     void remove(int index);
-    T get(int index) const;
+    T& get(int index);
     bool contains(const T& value) const;
     int size() const;
     bool isEmpty() const;
     void clear();
+    Node<T>* getNode(int index) const;
 };
 
 template<typename T>
@@ -148,7 +149,7 @@ void LinkedList<T>::pushBack(const T& value)
 }
 
 template<typename T>
-T LinkedList<T>::get(int index) const
+T& LinkedList<T>::get(int index)
 {
     if(index < 0 || index >= currentSize)
     {
@@ -293,5 +294,20 @@ void LinkedList<T>::clear()
     head = nullptr;
     tail = nullptr;
     currentSize = 0;
+}
+
+template<typename T>
+Node<T>* LinkedList<T>::getNode(int index) const
+{
+    if(index < 0 || index >= currentSize)
+    {
+        throw std::out_of_range("Invalid index");
+    }
+    Node<T>* current = head;
+    for(int i = 0; i < index; i++)
+    {
+        current = current->next;
+    }
+    return current;
 }
 

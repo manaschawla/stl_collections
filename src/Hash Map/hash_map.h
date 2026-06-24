@@ -91,3 +91,80 @@ public:
     bool isEmpty() const;
 };
 
+template<typename K, typename V>
+HashMap<K,V>::HashMap()
+{
+    currentSize = 0;
+    bucketCount = 8;
+
+    for(int i = 0; i < bucketCount; i++)
+    {
+        buckets.append(
+            LinkedList<Entry<K,V>>()
+        );
+    }
+}
+
+template<typename K, typename V>
+int HashMap<K,V>::size() const
+{
+    return currentSize;
+}
+
+template<typename K, typename V>
+bool HashMap<K,V>::isEmpty() const
+{
+    return currentSize == 0;
+}
+
+template<typename K, typename V>
+bool HashMap<K,V>::containsKey(const K& key) const
+{
+    int index = hasher.hash(key,bucketCount);
+    LinkedList<Entry<K,V>> bucket = buckets.get(index);
+    for(int i = 0; i < bucket.size(); i++)
+    {
+        Entry<K,V> entry =  bucket.get(i);
+        if(entry.key == key)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+template<typename K, typename V>
+V HashMap<K,V>::get(const K& key) const
+{
+    int index =hasher.hash(key,bucketCount);
+    LinkedList<Entry<K,V>> bucket = buckets.get(index);
+    for(int i = 0; i < bucket.size(); i++)
+    {
+        Entry<K,V> entry =bucket.get(i);
+        if(entry.key == key)
+        {
+            return entry.value;
+        }
+    }
+    throw std::out_of_range(
+        "Key not found"
+    );
+}
+
+template<typename K, typename V>
+void HashMap<K,V>::put(const K& key,const V& value)
+{
+    int index = hasher.hash(key,bucketCount);
+
+    LinkedList<Entry<K,V>>& bucket = buckets.get(index);
+    for(int i = 0; i < bucket.size(); i++)
+    {
+        if(bucket.get(i).key == key)
+        {
+            bucket.get(i).value = value;
+            return;
+        }
+    }
+    bucket.pushBack(Entry<K,V>(key,value));
+    currentSize++;
+}
+

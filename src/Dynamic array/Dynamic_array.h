@@ -24,8 +24,7 @@ public:
     void append(const T& value);
     void insert(int index, const T& value);
     void remove(int index);
-
-    T get(int index) const;
+    T& get(int index);
     void set(int index, const T& value);
 
     int size() const;
@@ -155,13 +154,12 @@ void DynamicArray<T>::append(const T& value)
 }
 
 template<typename T>
-T DynamicArray<T>::get(int index) const
+T& DynamicArray<T>::get(int index)
 {
     if(index < 0 || index >= currentSize)
     {
         throw std::out_of_range("Invalid index");
     }
-
     return data[index];
 }
 
@@ -228,5 +226,6 @@ void DynamicArray<T>::clear()
     }
     currentSize = 0;
 }
+
 
 #endif
