@@ -53,9 +53,7 @@ I choose 8 as intial size because it provides enough space for initial insertion
 
 ```cpp
 T* data;
-
 int size;
-
 int capacity;
 ```
 

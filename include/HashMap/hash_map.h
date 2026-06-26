@@ -29,9 +29,16 @@ template<typename K>
 class DefaultHasher
 {
 public:
+
     int hash(const K& key,int bucketCount) const
     {
-        return 0;
+        const unsigned char* bytes = reinterpret_cast<const unsigned char*>(&key);
+        unsigned long hash = 0;
+        for(int i = 0; i < sizeof(K); i++)
+        {
+            hash = hash * 31 + bytes[i];
+        }
+        return hash % bucketCount;
     }
 };
 
@@ -41,7 +48,7 @@ class DefaultHasher<int>
 public:
     int hash(const int& key,int bucketCount) const
     {
-        return key % bucketCount;
+        return (key * 31) % bucketCount;
     }
 };
 
@@ -60,12 +67,9 @@ class DefaultHasher<long>
 {
 public:
 
-    int hash(
-        const long& key,
-        int bucketCount
-    ) const
+    int hash(const long& key,int bucketCount) const
     {
-        return key % bucketCount;
+        return key % bucketC                                                                                                                                                                                ount;
     }
 };
 
@@ -74,10 +78,7 @@ class DefaultHasher<long long>
 {
 public:
 
-    int hash(
-        const long long& key,
-        int bucketCount
-    ) const
+    int hash(const long long& key,int bucketCount) const
     {
         return key % bucketCount;
     }
@@ -88,13 +89,9 @@ class DefaultHasher<float>
 {
 public:
 
-    int hash(
-        const float& key,
-        int bucketCount
-    ) const
+    int hash(const float& key,int bucketCount) const
     {
-        return ((int)(key * 1000))
-               % bucketCount;
+        return ((int)(key * 1000)) % bucketCount;
     }
 };
 template<>
@@ -102,13 +99,9 @@ class DefaultHasher<bool>
 {
 public:
 
-    int hash(
-        const bool& key,
-        int bucketCount
-    ) const
+    int hash(const bool& key,int bucketCount) const
     {
-        return ((int)key)
-               % bucketCount;
+        return ((int)key) % bucketCount;
     }
 };
 template<>
@@ -144,14 +137,14 @@ public:
     }
 };
 
-template<typename K, typename V>
+template<typename K, typename V, typename H = DefaultHasher<K>>
 class HashMap
 {
 private:
     DynamicArray<LinkedList<Entry<K,V>>> buckets;
     int currentSize;
     int bucketCount;
-    DefaultHasher<K> hasher;
+    H hasher;
     void rehash();
 
 public:

@@ -26,6 +26,7 @@ public:
     void insert(int index, const T& value);
     void remove(int index);
     T& get(int index);
+    const T& get(int index) const;
     void set(int index, const T& value);
 
     int size() const;

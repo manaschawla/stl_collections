@@ -1,5 +1,5 @@
-template<typename K, typename V>
-HashMap<K,V>::HashMap()
+template<typename K, typename V, typename H>
+HashMap<K,V, H>::HashMap()
 {
     currentSize = 0;
     bucketCount = 8;
@@ -12,16 +12,16 @@ HashMap<K,V>::HashMap()
     }
 }
 
-template<typename K, typename V>
-HashMap<K,V>::HashMap(const HashMap& other)
+template<typename K, typename V, typename H>
+HashMap<K,V, H>::HashMap(const HashMap& other)
 {
     buckets = other.buckets;
     currentSize = other.currentSize;
     bucketCount = other.bucketCount;
 }
 
-template<typename K, typename V>
-HashMap<K,V>& HashMap<K,V>::operator=(const HashMap& other)
+template<typename K, typename V, typename H>
+HashMap<K,V, H>& HashMap<K,V, H>::operator=(const HashMap& other)
 {
     if(this == &other)
     {
@@ -33,14 +33,14 @@ HashMap<K,V>& HashMap<K,V>::operator=(const HashMap& other)
     return *this;
 }
 
-template<typename K, typename V>
-int HashMap<K,V>::size() const
+template<typename K, typename V, typename H>
+int HashMap<K,V, H>::size() const
 {
     return currentSize;
 }
 
-template<typename K, typename V>
-void HashMap<K,V>::rehash()
+template<typename K, typename V, typename H>
+void HashMap<K,V, H>::rehash()
 {
     DynamicArray<LinkedList<Entry<K,V>>> oldBuckets = buckets;
     bucketCount = bucketCount * 2;
@@ -49,7 +49,6 @@ void HashMap<K,V>::rehash()
     {
         buckets.append(LinkedList<Entry<K,V>>());
     }
-    int oldSize = currentSize;
     currentSize = 0;
     for(int i = 0; i < oldBuckets.size(); i++)
     {
@@ -60,17 +59,16 @@ void HashMap<K,V>::rehash()
             put(entry.key,entry.value);
         }
     }
-    currentSize = oldSize;
 }
 
-template<typename K, typename V>
-bool HashMap<K,V>::isEmpty() const
+template<typename K, typename V, typename H>
+bool HashMap<K,V, H>::isEmpty() const
 {
     return currentSize == 0;
 }
 
-template<typename K, typename V>
-bool HashMap<K,V>::containsKey(const K& key) const
+template<typename K, typename V, typename H>
+bool HashMap<K,V, H>::containsKey(const K& key) const
 {
     int index = hasher.hash(key,bucketCount);
     LinkedList<Entry<K,V>> bucket = buckets.get(index);
@@ -84,8 +82,8 @@ bool HashMap<K,V>::containsKey(const K& key) const
     }
     return false;
 }
-template<typename K, typename V>
-V HashMap<K,V>::get(const K& key) const
+template<typename K, typename V, typename H>
+V HashMap<K,V, H>::get(const K& key) const
 {
     int index =hasher.hash(key,bucketCount);
     LinkedList<Entry<K,V>> bucket = buckets.get(index);
@@ -102,8 +100,8 @@ V HashMap<K,V>::get(const K& key) const
     );
 }
 
-template<typename K, typename V>
-void HashMap<K,V>::put(const K& key,const V& value)
+template<typename K, typename V, typename H>
+void HashMap<K,V, H>::put(const K& key,const V& value)
 {
     if(currentSize * 4 >= bucketCount * 3)
     {
@@ -123,8 +121,8 @@ void HashMap<K,V>::put(const K& key,const V& value)
     currentSize++;
 }
 
-template<typename K, typename V>
-void HashMap<K,V>::remove(const K& key)
+template<typename K, typename V, typename H>
+void HashMap<K,V, H>::remove(const K& key)
 {
     int index =hasher.hash(key,bucketCount);
     LinkedList<Entry<K,V>>& bucket = buckets.get(index);
@@ -140,8 +138,8 @@ void HashMap<K,V>::remove(const K& key)
     throw std::out_of_range("Key not found");
 }
 
-template<typename K, typename V>
-void HashMap<K,V>::clear()
+template<typename K, typename V, typename H>
+void HashMap<K,V, H>::clear()
 {
     for(int i = 0; i < bucketCount; i++)
     {

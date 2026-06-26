@@ -86,7 +86,7 @@ bool DynamicArray<T>::isEmpty() const
 template<typename T>
 void DynamicArray<T>::resize(int newCapacity)
 {
-    T* newData = (T*)malloc( newCapacity * sizeof(T));
+    T* newData = (T*)malloc( newCapacity * sizeof(T)); 
     if(newData == nullptr)
     {
         throw std::bad_alloc();
@@ -167,7 +167,7 @@ void DynamicArray<T>::insert(int index, const T& value)
 }
 
 template<typename T>
-T& DynamicArray<T>::get(int index)
+const T& DynamicArray<T>::get(int index) const
 {
     if(index < 0 || index >= currentSize)
     {
